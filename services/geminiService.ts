@@ -60,16 +60,15 @@ const withRetry = async <T>(
         || (parsedError.error && parsedError.error.message)
         || error.message || '';
 
-      // Quota exceeded → no retry
-      if (status === 429 && errorMessage.toLowerCase().includes('quota')) throw error;
+      const isQuota429 = status === 429 || errorMessage.toLowerCase().includes('quota') || errorMessage.includes('429');
 
       if (i < maxRetries) {
         const isTTSError   = errorMessage.includes('TTS_ENGINE_ERROR');
         const isOtherError = errorMessage.includes('OTHER');
 
-        // OTHER = transient server overload → longer wait. TTS errors → short. Else → standard.
-        let delay = (isOtherError ? 2000 : (isTTSError ? 800 : baseDelay))
-          * Math.pow(1.5, i)
+        // Quota / Rate Limit 429 → Wait 2.5s base + exponential. OTHER → 2000ms. TTS → 800ms.
+        let delay = (isQuota429 ? 2500 : (isOtherError ? 2000 : (isTTSError ? 800 : baseDelay)))
+          * Math.pow(1.6, i)
           + Math.random() * 500;
 
         const retryMatch = error.message?.match(/retry in (\d+(?:\.\d+)?)s/i);
@@ -506,7 +505,7 @@ export const generateSpotAudio = async (
   // ── Parallel synthesis with concurrency cap ────────────────────────────────
   // Process up to CONCURRENCY chunks simultaneously — eliminates sequential
   // wait time while staying well within API rate limits.
-  const CONCURRENCY = 3;
+  const CONCURRENCY = 2;
   let completedCount = 0;
 
   const processChunk = async (i: number): Promise<void> => {
@@ -548,8 +547,9 @@ export const generateSpotAudio = async (
     if (onProgress) onProgress(completedCount, allChunks.length);
   };
 
-  // Run in parallel batches of CONCURRENCY
+  // Run in parallel batches of CONCURRENCY with rate-limit friendly throttle
   for (let start = 0; start < allChunks.length; start += CONCURRENCY) {
+    if (start > 0) await wait(250);
     const batch = allChunks
       .slice(start, start + CONCURRENCY)
       .map((_, j) => processChunk(start + j));
