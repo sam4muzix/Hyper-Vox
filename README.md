@@ -79,8 +79,8 @@ Powered by Google's **Gemini 2.5 Flash TTS** (`gemini-2.5-flash-preview-tts`) an
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/sam4muzix/hypervox-sam.git
-   cd hypervox-sam
+   git clone https://github.com/sam4muzix/Hyper-Vox_sam.git
+   cd Hyper-Vox_sam
    ```
 
 2. **Install Dependencies**:
@@ -112,28 +112,42 @@ Powered by Google's **Gemini 2.5 Flash TTS** (`gemini-2.5-flash-preview-tts`) an
 HyperVox includes a production-grade multi-stage `Dockerfile` and `nginx.conf` designed for **Google Cloud Run**.
 
 ### Deployment Steps:
-1. Connect your GitHub repository (`sam4muzix/hypervox-sam`) to **Google Cloud Run** via **Developer Connect**.
+1. Connect your GitHub repository (`sam4muzix/Hyper-Vox_sam`) to **Google Cloud Run** via **Cloud Build** or **Developer Connect**.
 2. Set **Build Type** to **`Dockerfile`** (Source location: `/Dockerfile`).
-3. Deploy the service. Nginx will automatically bind to the dynamic `$PORT` provided by Cloud Run and handle client-side SPA routing.
+3. Under **Labels**, add the mandatory verification label:
+   - **Key**: `dev-tutorial`
+   - **Value**: `cloud-run-ai-challenge`
+4. Set authentication to **Allow unauthenticated invocations** so judges and public users can test the live application.
+5. Deploy the service. Nginx will automatically bind to the dynamic `$PORT` provided by Cloud Run and handle client-side SPA routing.
+
+---
+
+## 🗄️ Google Cloud Firestore Setup
+
+HyperVox integrates with **Cloud Firestore** for voice presets and generation telemetry.
+- **Rules File**: [`firestore.rules`](file:///e:/hypervox---powered-by-sam%202/hypervox---powered-by-sam%202/firestore.rules)
+- Deployed via Firebase CLI / Google Cloud Console with security rules enabled.
 
 ---
 
 ## 📁 Directory Structure
 
 ```
-hypervox-sam/
+Hyper-Vox_sam/
 ├── components/                  # React UI Workstation Modules
-│   ├── TtsPanel.tsx             # Neural TTS Generation Panel
+│   ├── TtsPanel.tsx             # Neural TTS Generation Panel (Gemini 2.5 / 3.1 TTS)
 │   ├── DubbingPanel.tsx         # AI Voice Dubbing & Sync Workstation
 │   └── TranscribeTranslatePanel.tsx # Speech Decoding & Translation Matrix
 ├── services/
-│   └── geminiService.ts         # Gemini 2.5 TTS & 3 Flash SDK Integration
+│   └── geminiService.ts         # Gemini TTS & Flash SDK Integration
 ├── utils/
-│   └── audio.ts                 # PCM/MP3 Converters & Time-Stretching Engine
+│   └── audio.ts                 # WSOLA Time-Stretching & Audio Processing
 ├── public/                      # Static Assets & Redirect Rules
 ├── App.tsx                      # Main Application Shell & Drawer Navigation
 ├── Dockerfile                   # Multi-Stage Production Build Dockerfile
 ├── nginx.conf                   # Nginx Template with $PORT Substitution & SPA Fallback
+├── firestore.rules              # Cloud Firestore Security Rules
+├── firebase.json                # Firebase Deployment Configuration
 ├── package.json                 # Project Dependencies & Scripts
 ├── tsconfig.json                # TypeScript Configuration
 └── vite.config.ts               # Vite Build Configuration
