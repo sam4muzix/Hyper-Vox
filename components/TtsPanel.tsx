@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialect, Emotion, SpeechPacing, VoiceGender, VoiceOption } from '../types';
 import { generateSpotAudio, clearAudioCache, optimizeScript } from '../services/geminiService';
+import { logGenerationToFirestore } from '../services/firebaseService';
 import { getBrandFilename } from '../utils/audio';
 
 const AVAILABLE_VOICES: VoiceOption[] = [
@@ -239,6 +240,12 @@ const TtsPanel: React.FC = () => {
         pacing
       );
       setAudioUrl(URL.createObjectURL(blob));
+      logGenerationToFirestore({
+        voiceId: selectedVoice.id,
+        emotion: String(emotion),
+        dialect: String(dialect),
+        scriptLength: script.length
+      });
     } catch (err: any) {
       console.error("Synthesis error:", err);
       let parsedError = err;

@@ -59,9 +59,10 @@ Powered by Google's **Gemini 2.5 Flash TTS** (`gemini-2.5-flash-preview-tts`) an
 | **Framework** | React 19 + TypeScript + Vite 6 |
 | **Styling** | TailwindCSS + Custom Emerald Fluid Glass CSS Design System |
 | **AI Audio Models** | Google Gemini 2.5 Flash TTS & Gemini 3 Flash |
+| **Database & Cloud** | Google Cloud Firestore (Real-time voice presets & generation analytics) |
 | **Audio Processing** | Custom PCM Decoder, LameJS MP3 Encoder, Time-Stretching Engine |
 | **Containerization** | Multi-Stage Dockerfile (Node 20 Alpine + Nginx Alpine) |
-| **Deployment Target** | Google Cloud Run (Automatic `$PORT` binding & SPA routing) |
+| **Deployment Target** | Google Cloud Run & Firebase Hosting (Automatic `$PORT` binding & SPA routing) |
 
 ---
 
