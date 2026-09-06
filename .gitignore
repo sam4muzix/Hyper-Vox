@@ -17,6 +17,8 @@ build.zip
 test_venv
 scratch
 migrated_prompt_history
+*.bat
+Run_Local.bat
 
 # Editor directories and files
 .vscode/*
