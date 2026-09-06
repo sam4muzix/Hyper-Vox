@@ -285,6 +285,31 @@ const resolveStyleToEmotion = (styleKey: string, defaultEmotion: Emotion): Emoti
   return defaultEmotion;
 };
 
+// ─── Per-voice persona overrides ─────────────────────────────────────────────
+/**
+ * Strong per-voice-ID delivery instructions that override the generic emotion
+ * profile for voices that share the same API voice name.
+ * This is what makes e.g. "Scarlett Warm" actually sound different from "Anitha".
+ */
+const VOICE_PERSONA_OVERRIDES: Record<string, string> = {
+  m_chennai_1: `VOICE CHARACTER OVERRIDE: You are ARJUN — a bold, street-smart Chennai local male. Speak with authentic Madras Bashai swagger. Energetic, punchy consonants. Drop into colloquial rhythm naturally.`,
+  f_classic_1: `VOICE CHARACTER OVERRIDE: You are ANITHA — a refined, traditional Tamil female news anchor. Elegant, measured diction. Formal Senthamizh pronunciation. Dignified, never shrill. Every word is precise.`,
+  m_rj_1:      `VOICE CHARACTER OVERRIDE: You are VIKRAM — a hyperactive FM radio jockey. Speak incredibly fast and punchy, with a constant smile in your voice. High energy, snappy transitions, zero dead air.`,
+  f_modern_1:  `VOICE CHARACTER OVERRIDE: You are PRIYA — a bubbly, modern urban city girl. Light, airy, bright vocal tone. Casual and friendly. Millennial energy — spontaneous, warm, relatable.`,
+  m_corp_1:    `VOICE CHARACTER OVERRIDE: You are SAM — a polished Indian English corporate announcer. Mid-range baritone, clear and confident. Professional but approachable. Perfect diction without sounding robotic.`,
+  f_warm_1:    `VOICE CHARACTER OVERRIDE: You are SCARLETT (Cinematic Warm) — a breathy, warm, emotionally rich female voice. Slightly husky lower register. Intimate and cinematic. Every sentence feels like a close whisper into the listener's ear.`,
+  f_power_1:   `VOICE CHARACTER OVERRIDE: You are SCARLETT (Power Ad) — a commanding, deep, punchy female commercial voice. Strong chest resonance. Authoritative without being masculine. Every word lands with weight and confidence.`,
+  f_narrative_1:`VOICE CHARACTER OVERRIDE: You are SCARLETT (Smooth Narration) — a velvety smooth female narrator. Silky mid-range tone, unhurried pace, zero harshness. The voice of luxury documentaries and premium brand films.`,
+  f_husky_1:   `VOICE CHARACTER OVERRIDE: You are SCARLETT (Sultry Husky) — a deep, husky, distinctly cinematic female voice. Lower-pitched than typical female voices. Rich, gravelly texture underneath warmth. Magnetic and unforgettable.`,
+  m_narrator_1:`VOICE CHARACTER OVERRIDE: You are KABIR — a deep, authoritative male narrator. Full bass resonance, slow and deliberate pacing. The voice of trust — news documentaries, institutional ads, government campaigns. Calm authority.`,
+  f_soft_1:    `VOICE CHARACTER OVERRIDE: You are MAYA — a gentle, soft-spoken female storyteller. Soft breathiness, minimal projection. Tender and sincere — like a mother reading a bedtime story. Never loud, always sincere.`,
+  m_deepbass_1:`VOICE CHARACTER OVERRIDE: You are TITAN — the deepest male bass voice possible. Speak from the absolute lowest register. Subwoofer chest resonance on every syllable. James Earl Jones meets a thunderstorm. Minimal inflection, maximum gravitas.`,
+  m_cinematic_1:`VOICE CHARACTER OVERRIDE: You are RAJAN — an epic Hollywood-style Tamil movie trailer narrator. Builds dramatic tension across each sentence. Thunderous peaks, controlled valleys. Every word feels like a title card slamming into frame.`,
+  f_cinematic_1:`VOICE CHARACTER OVERRIDE: You are ZARA — a deep, commanding female cinematic narrator. Lower than typical female voices, resonant and projecting. Epic, sweeping energy. Commands the room without effort.`,
+  m_deepbass_2:`VOICE CHARACTER OVERRIDE: You are ANAND (Velvet Thunder) — a smooth baritone with paradoxical warmth and weight. Imagine velvet wrapped around rolling thunder. Cultured, intelligent, slightly theatrical. Never shouts — power through restraint.`,
+  f_parrot_1:  `VOICE CHARACTER OVERRIDE: You are KOKO — a cute, high-pitched, excitable talking parrot. Speak in an ultra high-pitched squeaky parrot voice with parrot vocalizations (squawks, chirps, whistles) interspersed throughout.`,
+};
+
 // ─── Build prompt context instructions ─────────────────────────────────────────
 const buildPromptContext = (
   emotion: Emotion,
@@ -326,11 +351,14 @@ Director's Notes: Deliver the speech with ${emotion.toLowerCase()} emotion, but 
 - You must sound like a real, cute talking parrot, NOT a human.`;
   }
 
+  // Pull the per-voice-ID persona override if available (critical for voices sharing the same API voice name)
+  const voicePersonaOverride = VOICE_PERSONA_OVERRIDES[voice.id] ?? '';
+
   let context = `${emotionInstruction}
 
 ${pacingInstruction}
 Dialect: ${dialectStyle}.
-Voice Character: ${voice.persona}.
+${voicePersonaOverride || `Voice Character: ${voice.persona}.`}
 ABSOLUTE RULES:
 ${rules}`;
 
@@ -782,7 +810,11 @@ ABSOLUTE RULES:
   let offset = 0;
   for (const buf of pcmBuffers) { merged.set(buf, offset); offset += buf.length; }
 
-  // ── Duration lock: stretch/compress PCM to exactly match source duration ──────
+  // ── Duration lock: gentle stretch/compress PCM to match source duration ──────
+  // IMPORTANT: Only apply WSOLA stretch when drift is between 8% and 20%.
+  // Beyond 20% drift the translated script itself is too different in length —
+  // aggressive stretching causes the "chipmunk" pitch artifact. In that case,
+  // we output the natural TTS duration instead of forcing an unnatural stretch.
   const TTS_SAMPLE_RATE = 24000;
   const ttsOutputSecs   = merged.byteLength / 2 / TTS_SAMPLE_RATE;
   console.log(`[dubAudio] TTS output: ${ttsOutputSecs.toFixed(2)}s | Source: ${sourceDuration.toFixed(2)}s`);
@@ -790,12 +822,19 @@ ABSOLUTE RULES:
   let finalPcm = merged;
   if (sourceDuration > 0.5) {
     const driftRatio = ttsOutputSecs / sourceDuration;
-    if (driftRatio < 0.92 || driftRatio > 1.08) {
-      // More than 8 % off — apply time-stretch to snap to source duration
-      console.log(`[dubAudio] Drift ${((driftRatio - 1) * 100).toFixed(1)}% — applying time-stretch...`);
+    const driftPct   = Math.abs((driftRatio - 1) * 100);
+
+    if (driftPct > 8 && driftPct <= 20) {
+      // Moderate drift (8–20%) — safe to apply gentle WSOLA stretch
+      console.log(`[dubAudio] Drift ${((driftRatio - 1) * 100).toFixed(1)}% — applying gentle time-stretch...`);
       finalPcm = stretchPcmToTargetDuration(merged, ttsOutputSecs, sourceDuration, TTS_SAMPLE_RATE);
       const stretchedSecs = finalPcm.byteLength / 2 / TTS_SAMPLE_RATE;
       console.log(`[dubAudio] After stretch: ${stretchedSecs.toFixed(2)}s`);
+    } else if (driftPct > 20) {
+      // Large drift — skip stretch to avoid chipmunk/robotic artifacts.
+      // The translated script is a naturally different length; forcing it
+      // to match would degrade audio quality significantly.
+      console.log(`[dubAudio] Drift ${((driftRatio - 1) * 100).toFixed(1)}% — too large for safe stretch, outputting natural TTS duration.`);
     } else {
       console.log('[dubAudio] Duration within 8% tolerance — no stretch needed.');
     }
