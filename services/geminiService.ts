@@ -4,7 +4,7 @@ import { Dialect, Emotion, VoiceOption, TranscriptionStyle, DubbingGender, Speec
 import { decodeBase64ToUint8Array, pcmToMp3, blobToBase64, getAudioDurationFromFile, stretchPcmToTargetDuration } from '../utils/audio';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const TTS_MODEL  = 'gemini-2.5-flash-preview-tts';
+const TTS_MODEL  = 'gemini-3.1-flash-tts-preview';
 const TEXT_MODEL = 'gemini-3-flash-preview';
 
 const decodeDefaultKey = () => {
