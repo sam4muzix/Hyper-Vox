@@ -130,12 +130,9 @@ export const getAudioDurationFromFile = (file: File): Promise<number> =>
   });
 
 /**
- * Time-stretches 16-bit LE mono PCM to hit an exact target duration.
- *
- * Algorithm: linear interpolation resampling.
- * Ratio is clamped to [0.6 – 1.6] so output never sounds distorted.
- * Pitch is NOT preserved (slight Chipmunk / slow-down effect on extremes),
- * which is acceptable for ±30 % adjustments typical in dubbing.
+ * Time-stretches 16-bit LE mono PCM to hit an exact target duration WITHOUT changing pitch.
+ * Uses WSOLA (Waveform Similarity Overlap-Add) pitch-preserved time-scale modification.
+ * Prevents the "chipmunk / squeaky" voice effect during dubbing time alignment.
  *
  * @param pcm          Raw 16-bit LE PCM bytes (Gemini TTS output)
  * @param sourceSecs   Actual duration of the pcm in seconds
@@ -148,30 +145,95 @@ export const stretchPcmToTargetDuration = (
   targetSecs: number,
   sampleRate: number = 24000
 ): Uint8Array => {
-  const BYTES_PER_SAMPLE = 2;
-  const inputSamples  = Math.floor(pcm.byteLength / BYTES_PER_SAMPLE);
-  const outputSamples = Math.round(targetSecs * sampleRate);
+  if (sourceSecs <= 0.05 || targetSecs <= 0.05) return pcm;
 
-  // Clamp stretch ratio to 60 – 160 %
-  const rawRatio    = targetSecs / Math.max(sourceSecs, 0.001);
-  const clampedRatio = Math.min(Math.max(rawRatio, 0.6), 1.6);
-  const finalOutputSamples = Math.round(inputSamples * clampedRatio);
+  const rawRatio = targetSecs / sourceSecs;
+  // Clamp stretch ratio between 0.65 and 1.5 to keep speech completely natural
+  const stretchRatio = Math.min(Math.max(rawRatio, 0.65), 1.5);
 
-  const input  = new Int16Array(pcm.buffer, pcm.byteOffset, inputSamples);
-  const output = new Int16Array(finalOutputSamples);
-
-  for (let i = 0; i < finalOutputSamples; i++) {
-    // Map output position back to input position
-    const srcPos = (i / finalOutputSamples) * (inputSamples - 1);
-    const lo = Math.floor(srcPos);
-    const hi = Math.min(lo + 1, inputSamples - 1);
-    const frac = srcPos - lo;
-    // Linear interpolation between adjacent samples
-    output[i] = Math.round(input[lo] * (1 - frac) + input[hi] * frac);
+  // If stretch ratio is within 3% of 1.0, return original PCM directly
+  if (Math.abs(stretchRatio - 1.0) < 0.03) {
+    return pcm;
   }
 
-  // Wrap back in Uint8Array
-  return new Uint8Array(output.buffer);
+  const BYTES_PER_SAMPLE = 2;
+  const inputSamplesCount = Math.floor(pcm.byteLength / BYTES_PER_SAMPLE);
+  if (inputSamplesCount < 1000) return pcm;
+
+  const input = new Int16Array(pcm.buffer, pcm.byteOffset, inputSamplesCount);
+
+  // WSOLA parameters optimized for 24kHz speech
+  const N = 576; // Frame size (24ms at 24kHz)
+  const H_s = 288; // Synthesis hop size (12ms overlap)
+  const H_a = Math.max(16, Math.round(H_s / stretchRatio)); // Analysis hop size
+  const searchRange = 144; // Search range for cross-correlation (6ms)
+
+  // Calculate output length
+  const numSteps = Math.floor((inputSamplesCount - N - searchRange) / H_a);
+  if (numSteps <= 0) return pcm;
+
+  const outputSamplesCount = Math.round(numSteps * H_s + N);
+  const output = new Float32Array(outputSamplesCount);
+  const weights = new Float32Array(outputSamplesCount);
+
+  // Hanning window for smooth cross-fading
+  const window = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    window[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (N - 1)));
+  }
+
+  let outPos = 0;
+  let prevAnalysisPos = 0;
+
+  for (let step = 0; step < numSteps; step++) {
+    const targetAnalysisPos = Math.round(step * H_a);
+    let bestDelta = 0;
+
+    // Find best match position in search range using cross-correlation
+    if (step > 0) {
+      let maxCorr = -Infinity;
+      const refPos = prevAnalysisPos + H_s;
+
+      for (let delta = -searchRange; delta <= searchRange; delta += 2) {
+        const candidatePos = targetAnalysisPos + delta;
+        if (candidatePos < 0 || candidatePos + N >= inputSamplesCount || refPos + N >= inputSamplesCount) continue;
+
+        let corr = 0;
+        for (let k = 0; k < N; k += 8) {
+          corr += input[refPos + k] * input[candidatePos + k];
+        }
+
+        if (corr > maxCorr) {
+          maxCorr = corr;
+          bestDelta = delta;
+        }
+      }
+    }
+
+    const actualAnalysisPos = Math.min(Math.max(targetAnalysisPos + bestDelta, 0), inputSamplesCount - N);
+    prevAnalysisPos = actualAnalysisPos;
+
+    // Overlap-add windowed frame
+    for (let k = 0; k < N; k++) {
+      const idx = outPos + k;
+      if (idx < outputSamplesCount) {
+        output[idx] += input[actualAnalysisPos + k] * window[k];
+        weights[idx] += window[k];
+      }
+    }
+
+    outPos += H_s;
+  }
+
+  // Normalize by overlap weights & convert back to Int16 PCM
+  const resultPCM = new Int16Array(outputSamplesCount);
+  for (let i = 0; i < outputSamplesCount; i++) {
+    const w = weights[i] > 0.001 ? weights[i] : 1.0;
+    const sample = output[i] / w;
+    resultPCM[i] = Math.min(Math.max(Math.round(sample), -32768), 32767);
+  }
+
+  return new Uint8Array(resultPCM.buffer);
 };
 
 // ── Brand Name Extraction & Dynamic Output Filenames ──────────────────────────

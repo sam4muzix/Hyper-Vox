@@ -5,22 +5,22 @@ import { logGenerationToFirestore } from '../services/firebaseService';
 import { getBrandFilename } from '../utils/audio';
 
 const AVAILABLE_VOICES: VoiceOption[] = [
-  { id: 'm_chennai_1', name: 'Arjun - Chennai Gethu', gender: VoiceGender.MALE, apiVoiceName: 'Zephyr', persona: 'Bold, street-smart Chennai local male' },
+  { id: 'm_chennai_1', name: 'Arjun - Chennai Gethu', gender: VoiceGender.MALE, apiVoiceName: 'Puck', persona: 'Bold, street-smart Chennai local male' },
   { id: 'f_classic_1', name: 'Anitha - Formal Tamil', gender: VoiceGender.FEMALE, apiVoiceName: 'Kore', persona: 'Traditional, elegant Tamil female anchor' },
   { id: 'm_rj_1', name: 'Vikram - Energetic RJ', gender: VoiceGender.MALE, apiVoiceName: 'Puck', persona: 'Fast-talking, high-energy radio host' },
-  { id: 'f_modern_1', name: 'Priya - Urban Modern', gender: VoiceGender.FEMALE, apiVoiceName: 'Leda', persona: 'Modern, bubbly city girl voice' },
+  { id: 'f_modern_1', name: 'Priya - Urban Modern', gender: VoiceGender.FEMALE, apiVoiceName: 'Aoede', persona: 'Modern, bubbly city girl voice' },
   { id: 'm_corp_1', name: 'Sam - Indian English Pro', gender: VoiceGender.MALE, apiVoiceName: 'Charon', persona: 'Professional corporate announcer (Indian English)' },
-  { id: 'f_warm_1', name: 'Scarlett - Cinematic Warm', gender: VoiceGender.FEMALE, apiVoiceName: 'Sulafat', persona: 'Warm, breathy, and cinematic female voice' },
-  { id: 'f_power_1', name: 'Scarlett - Power Ad', gender: VoiceGender.FEMALE, apiVoiceName: 'Autonoe', persona: 'Commanding commercial voice, deep and punchy' },
-  { id: 'f_narrative_1', name: 'Scarlett - Smooth Narration', gender: VoiceGender.FEMALE, apiVoiceName: 'Callirrhoe', persona: 'Velvety smooth narration voice' },
-  { id: 'f_husky_1', name: 'Scarlett - Sultry Husky', gender: VoiceGender.FEMALE, apiVoiceName: 'Despina', persona: 'Signature deep, husky cinematic voice' },
-  { id: 'm_narrator_1', name: 'Kabir - Deep Narrator', gender: VoiceGender.MALE, apiVoiceName: 'Algenib', persona: 'Deep, authoritative professional narrator' },
-  { id: 'f_soft_1', name: 'Maya - Gentle Storyteller', gender: VoiceGender.FEMALE, apiVoiceName: 'Achernar', persona: 'Soft-spoken narrator for stories' },
-  { id: 'm_deepbass_1', name: 'Titan - Deep Bass Commander', gender: VoiceGender.MALE, apiVoiceName: 'Iapetus', persona: 'Ultra-deep bass voice with subwoofer authority' },
+  { id: 'f_warm_1', name: 'Scarlett - Cinematic Warm', gender: VoiceGender.FEMALE, apiVoiceName: 'Kore', persona: 'Warm, breathy, and cinematic female voice' },
+  { id: 'f_power_1', name: 'Scarlett - Power Ad', gender: VoiceGender.FEMALE, apiVoiceName: 'Aoede', persona: 'Commanding commercial voice, deep and punchy' },
+  { id: 'f_narrative_1', name: 'Scarlett - Smooth Narration', gender: VoiceGender.FEMALE, apiVoiceName: 'Kore', persona: 'Velvety smooth narration voice' },
+  { id: 'f_husky_1', name: 'Scarlett - Sultry Husky', gender: VoiceGender.FEMALE, apiVoiceName: 'Aoede', persona: 'Signature deep, husky cinematic voice' },
+  { id: 'm_narrator_1', name: 'Kabir - Deep Narrator', gender: VoiceGender.MALE, apiVoiceName: 'Charon', persona: 'Deep, authoritative professional narrator' },
+  { id: 'f_soft_1', name: 'Maya - Gentle Storyteller', gender: VoiceGender.FEMALE, apiVoiceName: 'Kore', persona: 'Soft-spoken narrator for stories' },
+  { id: 'm_deepbass_1', name: 'Titan - Deep Bass Commander', gender: VoiceGender.MALE, apiVoiceName: 'Fenrir', persona: 'Ultra-deep bass voice with subwoofer authority' },
   { id: 'm_cinematic_1', name: 'Rajan - Cinematic Trailer Voice', gender: VoiceGender.MALE, apiVoiceName: 'Fenrir', persona: 'Epic Hollywood movie trailer narrator' },
-  { id: 'f_cinematic_1', name: 'Zara - Epic Narration Queen', gender: VoiceGender.FEMALE, apiVoiceName: 'Erinome', persona: 'Deep, commanding female cinematic narrator' },
-  { id: 'm_deepbass_2', name: 'Anand - Velvet Thunder', gender: VoiceGender.MALE, apiVoiceName: 'Orus', persona: 'Smooth baritone — like velvet wrapped around thunder' },
-  { id: 'f_parrot_1', name: 'Koko - Cute Parrot', gender: VoiceGender.FEMALE, apiVoiceName: 'Achird', persona: 'High-pitched parrot with squawks and whistles' },
+  { id: 'f_cinematic_1', name: 'Zara - Epic Narration Queen', gender: VoiceGender.FEMALE, apiVoiceName: 'Aoede', persona: 'Deep, commanding female cinematic narrator' },
+  { id: 'm_deepbass_2', name: 'Anand - Velvet Thunder', gender: VoiceGender.MALE, apiVoiceName: 'Charon', persona: 'Smooth baritone — like velvet wrapped around thunder' },
+  { id: 'f_parrot_1', name: 'Koko - Cute Parrot', gender: VoiceGender.FEMALE, apiVoiceName: 'Aoede', persona: 'High-pitched parrot with squawks and whistles' },
 ];
 
 /** Minimalist SVG Icons for Pacing */
