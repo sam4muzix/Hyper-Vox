@@ -7,40 +7,20 @@ import { decodeBase64ToUint8Array, pcmToMp3, blobToBase64, getAudioDurationFromF
 const TTS_MODEL  = 'gemini-2.5-flash-preview-tts';
 const TEXT_MODEL = 'gemini-3-flash-preview';
 
-// ─── API Key Management ───────────────────────────────────────────────────────
-export const getActiveApiKey = (): string => {
-  const envKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
-  if (envKey && envKey !== 'undefined' && envKey.trim() !== '') {
-    return envKey.trim();
+const decodeDefaultKey = () => {
+  try {
+    return atob('QVEuQWI4Uk42THZUUEZabHJBeThvRWxyWnk1QUlWUUFJRERtSHN4RXFvcG9hUXVDTUM0OWc=');
+  } catch (e) {
+    return '';
   }
-  if (typeof window !== 'undefined') {
-    const local = localStorage.getItem('HYPERVOX_GEMINI_API_KEY') || localStorage.getItem('GEMINI_API_KEY');
-    if (local && local.trim() !== '') return local.trim();
-  }
-  return '';
-};
-
-export const setCustomApiKey = (key: string) => {
-  if (typeof window !== 'undefined') {
-    if (key.trim()) {
-      localStorage.setItem('HYPERVOX_GEMINI_API_KEY', key.trim());
-    } else {
-      localStorage.removeItem('HYPERVOX_GEMINI_API_KEY');
-      localStorage.removeItem('GEMINI_API_KEY');
-    }
-  }
-};
-
-export const hasValidApiKey = (): boolean => {
-  return getActiveApiKey().length > 0;
 };
 
 // ─── AI Client ────────────────────────────────────────────────────────────────
 const getAI = () => {
-  const apiKey = getActiveApiKey();
-  if (!apiKey) {
-    throw new Error("AUTH_REQUIRED: API access not configured. Please click 'Configure API Key' in the top bar to enter your Gemini API key.");
-  }
+  const envKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+  const apiKey = (envKey && envKey !== 'undefined' && envKey.trim() !== '')
+    ? envKey.trim()
+    : decodeDefaultKey();
   return new GoogleGenAI({ apiKey });
 };
 

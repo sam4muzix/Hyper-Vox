@@ -37,15 +37,6 @@ const TAB_ICONS: Record<Tab, React.ReactNode> = {
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>(Tab.TTS);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
-  const [keyInput, setKeyInput] = useState(() => getActiveApiKey());
-  const [hasKey, setHasKey] = useState(() => hasValidApiKey());
-
-  const handleSaveApiKey = () => {
-    setCustomApiKey(keyInput);
-    setHasKey(hasValidApiKey());
-    setIsApiKeyModalOpen(false);
-  };
 
   return (
     <div className="min-h-screen bg-[#050a07] text-gray-100 font-sans selection:bg-emerald-500/30 selection:text-white relative overflow-x-hidden">
@@ -79,108 +70,10 @@ const App: React.FC = () => {
             </span>
           </div>
 
-          {/* Right: API Key Config Button */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                setKeyInput(getActiveApiKey());
-                setIsApiKeyModalOpen(true);
-              }}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all shadow-sm ${
-                hasKey
-                  ? 'bg-emerald-950/50 hover:bg-emerald-900/60 border-emerald-500/40 text-emerald-300'
-                  : 'bg-amber-950/50 hover:bg-amber-900/70 border-amber-500/60 text-amber-300 animate-pulse'
-              }`}
-            >
-              <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0121 8.25z" />
-              </svg>
-              <span>{hasKey ? 'API Key Set' : 'Configure API Key'}</span>
-            </button>
-          </div>
+          {/* Right: Spacer for symmetry */}
+          <div className="w-28 hidden sm:block"></div>
         </div>
       </header>
-
-      {/* ── API Key Configuration Modal ───────────────────────────────────────── */}
-      {isApiKeyModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div 
-            onClick={() => setIsApiKeyModalOpen(false)} 
-            className="fixed inset-0 bg-black/75 backdrop-blur-md transition-opacity"
-          />
-          <div className="relative w-full max-w-md bg-[#081810] border border-emerald-500/40 rounded-3xl p-6 shadow-2xl z-10 space-y-5">
-            <div className="flex items-center justify-between border-b border-emerald-500/20 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0121 8.25z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">Google Gemini API Key</h3>
-                  <p className="text-xs text-emerald-400">HyperVox Engine Access</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsApiKeyModalOpen(false)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <p className="text-xs text-gray-300 leading-relaxed">
-                Enter your Google Gemini API Key below. This key is used directly to authenticate calls to <span className="text-emerald-400 font-mono">gemini-2.5-flash-preview-tts</span> and <span className="text-emerald-400 font-mono">gemini-3-flash-preview</span>.
-              </p>
-              
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-gray-300 uppercase tracking-wider">
-                  Gemini API Key
-                </label>
-                <input
-                  type="password"
-                  value={keyInput}
-                  onChange={(e) => setKeyInput(e.target.value)}
-                  placeholder="AIzaSy..."
-                  className="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-emerald-500/30 text-white placeholder-gray-500 text-xs font-mono focus:outline-none focus:border-emerald-400 transition-colors"
-                />
-              </div>
-
-              <div className="flex items-center justify-between text-[11px] pt-1">
-                <a
-                  href="https://aistudio.google.com/app/apikey"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-emerald-400 hover:underline flex items-center gap-1 font-medium"
-                >
-                  <span>Get API Key from Google AI Studio</span>
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                  </svg>
-                </a>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-emerald-500/20">
-              <button
-                onClick={() => setIsApiKeyModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveApiKey}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-black shadow-lg shadow-emerald-500/20 transition-all"
-              >
-                Save API Key
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── Slide-Out Green-Tinted Liquid Glass Studio Modules Drawer Modal ───── */}
       {isDrawerOpen && (
