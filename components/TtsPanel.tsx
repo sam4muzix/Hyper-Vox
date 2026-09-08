@@ -4,6 +4,7 @@ import { generateSpotAudio, clearAudioCache, optimizeScript } from '../services/
 import { logGenerationToFirestore } from '../services/firebaseService';
 import { getBrandFilename } from '../utils/audio';
 import { RealtimeProgress } from './RealtimeProgress';
+import { SpeechToTextDictation } from './SpeechToTextDictation';
 
 const AVAILABLE_VOICES: VoiceOption[] = [
   { id: 'm_chennai_1', name: 'Arjun - Chennai Gethu', gender: VoiceGender.MALE, apiVoiceName: 'Puck', persona: 'Bold, street-smart Chennai local male' },
@@ -445,6 +446,11 @@ const TtsPanel: React.FC = () => {
                   Synthesizing Part {progress.current} of {progress.total}
                 </span>
               )}
+
+              <SpeechToTextDictation
+                disabled={isLoading}
+                onTranscript={(text) => setScript((prev) => prev ? prev + ' ' + text : text)}
+              />
 
               <button
                 onClick={handleResetEngine}
