@@ -9,7 +9,7 @@ const TEXT_MODEL = 'gemini-3-flash-preview';
 
 const decodeDefaultKey = () => {
   try {
-    return atob('QVEuQWI4Uk42SkhaQmxSTWhqaVpyTmFCRkhyX1kzb3hWRThiWkZXVDFnTnUzX3JCRlpLZUE=');
+    return atob('QVEuQWI4Uk42THZUUEZabHJBeThvRWxyWnk1QUlWUUFJRFFtSHN4RXFvcG9hUXVDTUM0OWc=');
   } catch (e) {
     return '';
   }
