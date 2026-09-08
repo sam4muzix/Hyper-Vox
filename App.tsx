@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import TtsPanel from './components/TtsPanel';
 import DubbingPanel from './components/DubbingPanel';
 import TranscribeTranslatePanel from './components/TranscribeTranslatePanel';
+import { IntroModal } from './components/IntroModal';
 import { getActiveApiKey, setCustomApiKey, hasValidApiKey } from './services/geminiService';
 
 enum Tab {
@@ -37,10 +38,14 @@ const TAB_ICONS: Record<Tab, React.ReactNode> = {
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>(Tab.TTS);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isIntroOpen, setIsIntroOpen] = useState(() => !localStorage.getItem('hypervox_skip_intro'));
 
   return (
     <div className="min-h-screen bg-[#050a07] text-gray-100 font-sans selection:bg-emerald-500/30 selection:text-white relative overflow-x-hidden">
       
+      {/* Intro / Startup Feature Showcase Modal */}
+      <IntroModal isOpen={isIntroOpen} onClose={() => setIsIntroOpen(false)} />
+
       {/* Background Emerald Fluid Ambient Glows */}
       <div className="fixed top-[-120px] left-[20%] w-[650px] h-[650px] bg-emerald-600/10 rounded-full blur-[160px] pointer-events-none z-0"></div>
       <div className="fixed top-[300px] right-[10%] w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[170px] pointer-events-none z-0"></div>
@@ -50,15 +55,28 @@ const App: React.FC = () => {
         <div className="max-w-[1800px] mx-auto px-6 h-20 flex items-center justify-between relative">
           
           {/* Left: Studio Modules Drawer Button */}
-          <button
-            onClick={() => setIsDrawerOpen(true)}
-            className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 hover:border-emerald-400 transition-all text-xs font-semibold text-gray-200 shadow-sm"
-          >
-            <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6h16.5M3.75 12h16.5m-16.5 6h16.5" />
-            </svg>
-            <span>Studio Modules</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsDrawerOpen(true)}
+              className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 hover:border-emerald-400 transition-all text-xs font-semibold text-gray-200 shadow-sm"
+            >
+              <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6h16.5M3.75 12h16.5m-16.5 6h16.5" />
+              </svg>
+              <span>Studio Modules</span>
+            </button>
+
+            <button
+              onClick={() => setIsIntroOpen(true)}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-gray-300 hover:text-white transition-all"
+              title="Open Feature Guide & Intro"
+            >
+              <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+              </svg>
+              <span className="hidden sm:inline">Guide</span>
+            </button>
+          </div>
 
           {/* Center Title strictly: Big HyperVox + by Greenmix Labs Subtitle */}
           <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none flex flex-col items-center">
