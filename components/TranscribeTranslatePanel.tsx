@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { TranscriptionJob, TranscriptionStyle } from '../types';
 import { transcribeAudio, translateText } from '../services/geminiService';
+import { RealtimeProgress } from './RealtimeProgress';
 
 const LANGUAGES = [
   'English', 'Tamil', 'Hindi', 'Telugu', 'Malayalam', 'Kannada', 'Marathi', 'Bengali', 'Gujarati'
@@ -194,16 +195,24 @@ const TranscribeTranslatePanel: React.FC = () => {
                 </div>
               </div>
 
+              <RealtimeProgress 
+                isProcessing={isTranscribing} 
+                current={isTranscribing ? 1 : 0} 
+                total={1} 
+                title="Multimodal Speech Decoding Matrix" 
+                statusMessage="Transcribing Audio & Generating Translation..."
+              />
+
               <button
                 onClick={handleTranscribe}
                 disabled={isTranscribing || !audioFile}
                 className={`w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all mt-6 ${
                   isTranscribing || !audioFile
-                    ? 'bg-white/5 text-gray-600 border border-white/5 cursor-not-allowed'
+                    ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 cursor-wait'
                     : 'liquid-btn-primary'
                 }`}
               >
-                {isTranscribing ? 'DECODING AUDIO...' : 'TRANSCRIBE & TRANSLATE'}
+                {isTranscribing ? 'DECODING AUDIO STREAM...' : 'TRANSCRIBE & TRANSLATE'}
               </button>
             </div>
           </div>
@@ -296,16 +305,24 @@ const TranscribeTranslatePanel: React.FC = () => {
                 </div>
               </div>
 
+              <RealtimeProgress 
+                isProcessing={isTranslating} 
+                current={isTranslating ? 1 : 0} 
+                total={1} 
+                title="Gemini 3.6 Flash Translation Stream" 
+                statusMessage="Processing Dialect & Style Matrix..."
+              />
+
               <button
                 onClick={handleTranslate}
                 disabled={isTranslating || !inputText.trim()}
                 className={`w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
                   isTranslating || !inputText.trim()
-                    ? 'bg-white/5 text-gray-600 border border-white/5 cursor-not-allowed'
+                    ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 cursor-wait'
                     : 'liquid-btn-primary'
                 }`}
               >
-                {isTranslating ? 'TRANSLATING TEXT...' : 'RUN TRANSLATION'}
+                {isTranslating ? 'RUNNING TRANSLATION...' : 'RUN TRANSLATION'}
               </button>
             </div>
           </div>

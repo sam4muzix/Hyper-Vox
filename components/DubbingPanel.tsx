@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { ProcessingFile, DubbingStyle, DubbingGender, Emotion } from '../types';
 import { dubAudio } from '../services/geminiService';
+import { RealtimeProgress } from './RealtimeProgress';
 import JSZip from 'jszip';
 
 const LANGUAGES = [
@@ -232,6 +233,14 @@ const DubbingPanel: React.FC = () => {
             <span className="text-[10px] text-gray-400 mt-1">MP3, WAV, M4A, FLAC</span>
           </div>
 
+          {/* Real-Time Live Visual Progress Bar */}
+          <RealtimeProgress 
+            isProcessing={isProcessing} 
+            current={files.filter(f => f.status === 'completed').length} 
+            total={files.length} 
+            title="Multi-Track AI Dubbing Pipeline" 
+          />
+
           <button
             onClick={processQueue}
             disabled={isProcessing || files.filter(f => f.status === 'pending').length === 0}
@@ -241,7 +250,7 @@ const DubbingPanel: React.FC = () => {
                 : 'liquid-btn-primary'
             }`}
           >
-            {isProcessing ? 'PROCESSING BATCH...' : `START DUBBING (${files.filter(f => f.status === 'pending').length})`}
+            {isProcessing ? `DUBBING BATCH (${files.filter(f => f.status === 'completed').length}/${files.length})` : `START DUBBING (${files.filter(f => f.status === 'pending').length})`}
           </button>
         </div>
 

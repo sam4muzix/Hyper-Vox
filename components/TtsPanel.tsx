@@ -3,6 +3,7 @@ import { Dialect, Emotion, SpeechPacing, VoiceGender, VoiceOption } from '../typ
 import { generateSpotAudio, clearAudioCache, optimizeScript } from '../services/geminiService';
 import { logGenerationToFirestore } from '../services/firebaseService';
 import { getBrandFilename } from '../utils/audio';
+import { RealtimeProgress } from './RealtimeProgress';
 
 const AVAILABLE_VOICES: VoiceOption[] = [
   { id: 'm_chennai_1', name: 'Arjun - Chennai Gethu', gender: VoiceGender.MALE, apiVoiceName: 'Puck', persona: 'Bold, street-smart Chennai local male' },
@@ -494,15 +495,23 @@ Tip: Use (Style) tags for per-sentence emotion delivery — e.g. (Shouting) Mass
           </div>
         </div>
 
+        {/* Real-Time Live Visual Progress Bar */}
+        <RealtimeProgress 
+          isProcessing={isLoading} 
+          current={progress.current} 
+          total={progress.total} 
+          title="Gemini 3.1 Neural Speech Engine" 
+        />
+
         {/* Single-Word Strong Action Button */}
         <button
           onClick={handleGenerate}
           disabled={isLoading}
           className={`w-full py-4 rounded-xl font-bold text-base uppercase tracking-widest transition-all ${
-            isLoading ? 'bg-white/5 text-gray-500 cursor-wait' : 'liquid-btn-primary'
+            isLoading ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 cursor-wait' : 'liquid-btn-primary'
           }`}
         >
-          {isLoading ? `SYNTHESIZING... (${progress.current}/${progress.total})` : 'SYNTHESIZE'}
+          {isLoading ? `SYNTHESIZING... (${progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0}%)` : 'SYNTHESIZE'}
         </button>
 
         {/* Audio Player & Visualizer */}
