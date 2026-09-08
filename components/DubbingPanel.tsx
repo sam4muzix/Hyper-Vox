@@ -2,7 +2,19 @@ import React, { useState, useRef } from 'react';
 import { ProcessingFile, DubbingStyle, DubbingGender, Emotion } from '../types';
 import { dubAudio } from '../services/geminiService';
 import { RealtimeProgress } from './RealtimeProgress';
+import { CustomSelect, SelectOption } from './CustomSelect';
 import JSZip from 'jszip';
+
+const EMOTION_OPTIONS: SelectOption[] = Object.values(Emotion).map(e => ({ value: e, label: e }));
+const STYLE_OPTIONS: SelectOption[] = [
+  { value: 'Local Speaking Form', label: 'Colloquial Slang' },
+  { value: 'Classical', label: 'Formal / Classical' }
+];
+const GENDER_OPTIONS: SelectOption[] = [
+  { value: 'Auto (Match Source)', label: 'Auto Match' },
+  { value: 'Male', label: 'Male Artist' },
+  { value: 'Female', label: 'Female Artist' }
+];
 
 const LANGUAGES = [
   'Tamil', 'Hindi', 'Telugu', 'Malayalam', 'Kannada', 'Marathi', 'Bengali', 'Gujarati', 
@@ -138,44 +150,36 @@ const DubbingPanel: React.FC = () => {
         
         <div className="flex flex-wrap items-center gap-3">
           {/* Global Vibe */}
-          <div className="px-3.5 py-2 bg-black/40 rounded-xl border border-emerald-500/30 flex flex-col min-w-[160px]">
-            <span className="text-[10px] text-emerald-400 uppercase font-semibold tracking-wider">Global Vibe</span>
-            <select
+          <div className="min-w-[160px]">
+            <CustomSelect
+              label="Global Vibe"
+              options={EMOTION_OPTIONS}
               value={targetEmotion}
-              onChange={(e) => setTargetEmotion(e.target.value as Emotion)}
-              className="bg-transparent text-white font-medium focus:outline-none text-xs cursor-pointer mt-0.5"
-            >
-              {Object.values(Emotion).map(e => (
-                <option key={e} value={e} className="bg-[#081810]">{e}</option>
-              ))}
-            </select>
+              onChange={(val) => setTargetEmotion(val as Emotion)}
+              disabled={isProcessing}
+            />
           </div>
 
           {/* Style */}
-          <div className="px-3.5 py-2 bg-black/40 rounded-xl border border-white/10 flex flex-col min-w-[140px]">
-            <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">Style</span>
-            <select
+          <div className="min-w-[140px]">
+            <CustomSelect
+              label="Style"
+              options={STYLE_OPTIONS}
               value={style}
-              onChange={(e) => setStyle(e.target.value as DubbingStyle)}
-              className="bg-transparent text-white font-medium focus:outline-none text-xs cursor-pointer mt-0.5"
-            >
-              <option value="Local Speaking Form" className="bg-[#081810]">Colloquial Slang</option>
-              <option value="Classical" className="bg-[#081810]">Formal / Classical</option>
-            </select>
+              onChange={(val) => setStyle(val as DubbingStyle)}
+              disabled={isProcessing}
+            />
           </div>
 
           {/* Gender */}
-          <div className="px-3.5 py-2 bg-black/40 rounded-xl border border-white/10 flex flex-col min-w-[130px]">
-            <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">Vocal Profile</span>
-            <select
+          <div className="min-w-[140px]">
+            <CustomSelect
+              label="Vocal Profile"
+              options={GENDER_OPTIONS}
               value={targetGender}
-              onChange={(e) => setTargetGender(e.target.value as DubbingGender)}
-              className="bg-transparent text-white font-medium focus:outline-none text-xs cursor-pointer mt-0.5"
-            >
-              <option value="Auto (Match Source)" className="bg-[#081810]">Auto Match</option>
-              <option value="Male" className="bg-[#081810]">Male Artist</option>
-              <option value="Female" className="bg-[#081810]">Female Artist</option>
-            </select>
+              onChange={(val) => setTargetGender(val as DubbingGender)}
+              disabled={isProcessing}
+            />
           </div>
         </div>
       </div>

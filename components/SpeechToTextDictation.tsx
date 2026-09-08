@@ -1,16 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { transcribeAudio } from '../services/geminiService';
+import { CustomSelect, SelectOption } from './CustomSelect';
 
 interface SpeechToTextDictationProps {
   onTranscript: (text: string) => void;
   disabled?: boolean;
 }
 
-const STT_LANGUAGES = [
-  { code: 'ta-IN', name: 'Tamil (தமிழ்)' },
-  { code: 'hi-IN', name: 'Hindi (हिंदी)' },
-  { code: 'en-IN', name: 'Indian English' },
-  { code: 'en-US', name: 'English (US)' },
+const STT_LANGUAGES: SelectOption[] = [
+  { value: 'ta-IN', label: 'Tamil (தமிழ்)' },
+  { value: 'hi-IN', label: 'Hindi (हिंदी)' },
+  { value: 'en-IN', label: 'Indian English' },
+  { value: 'en-US', label: 'English (US)' },
 ];
 
 export const SpeechToTextDictation: React.FC<SpeechToTextDictationProps> = ({
@@ -49,7 +50,7 @@ export const SpeechToTextDictation: React.FC<SpeechToTextDictationProps> = ({
 
       recognition.onstart = () => {
         setIsRecording(true);
-        setStatusMessage(`Listening in ${STT_LANGUAGES.find(l => l.code === selectedLang)?.name}... Speak now.`);
+        setStatusMessage(`Listening in ${STT_LANGUAGES.find(l => l.value === selectedLang)?.label}... Speak now.`);
       };
 
       recognition.onresult = (event: any) => {
@@ -118,7 +119,7 @@ export const SpeechToTextDictation: React.FC<SpeechToTextDictationProps> = ({
         if (audioBlob.size > 1000) {
           setStatusMessage("Processing audio with Gemini Multimodal Transcriber...");
           try {
-            const langName = STT_LANGUAGES.find(l => l.code === selectedLang)?.name || 'Tamil';
+            const langName = STT_LANGUAGES.find(l => l.value === selectedLang)?.label || 'Tamil';
             const audioFile = new File([audioBlob], "speech_dictation.webm", { type: 'audio/webm' });
             const resultText = await transcribeAudio(audioFile, langName, 'Straight Translation');
             if (resultText && !resultText.includes('failed')) {
@@ -135,7 +136,7 @@ export const SpeechToTextDictation: React.FC<SpeechToTextDictationProps> = ({
 
       mediaRecorder.start();
       setIsRecording(true);
-      setStatusMessage(`Recording audio for ${STT_LANGUAGES.find(l => l.code === selectedLang)?.name}... Click mic to finish.`);
+      setStatusMessage(`Recording audio for ${STT_LANGUAGES.find(l => l.value === selectedLang)?.label}... Click mic to finish.`);
     } catch (err) {
       console.error('[STT] Microphone access failed:', err);
       setStatusMessage("Could not access microphone.");
@@ -179,18 +180,14 @@ export const SpeechToTextDictation: React.FC<SpeechToTextDictationProps> = ({
   return (
     <div className="flex items-center gap-2 flex-wrap">
       {/* STT Language Selector */}
-      <select
-        value={selectedLang}
-        onChange={(e) => setSelectedLang(e.target.value)}
-        disabled={disabled || isRecording}
-        className="bg-black/40 border border-white/10 hover:border-emerald-500/30 text-gray-200 text-xs rounded-lg px-2.5 py-1 focus:outline-none focus:border-emerald-500 transition-all cursor-pointer disabled:opacity-50"
-      >
-        {STT_LANGUAGES.map(lang => (
-          <option key={lang.code} value={lang.code} className="bg-[#081810] text-white">
-            {lang.name}
-          </option>
-        ))}
-      </select>
+      <div className="w-36">
+        <CustomSelect
+          options={STT_LANGUAGES}
+          value={selectedLang}
+          onChange={(val) => setSelectedLang(val)}
+          disabled={disabled || isRecording}
+        />
+      </div>
 
       {/* Dictation Button */}
       <button

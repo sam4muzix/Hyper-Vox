@@ -110,7 +110,7 @@ export const IntroModal: React.FC<IntroModalProps> = ({ isOpen, onClose }) => {
             </div>
             <h3 className="text-sm font-bold text-white">🌐 Speech Matrix</h3>
             <p className="text-[11px] text-gray-300 leading-normal">
-              Audio transcription & multi-dialect translation (*Chennai Tamil*, *Senthamizh*, *Indian English*) powered by Gemini 3.6 Flash.
+              Audio transcription & multi-dialect translation (*Chennai Tamil*, *Senthamizh*, *Indian English*) powered by Neural Audio Intelligence.
             </p>
           </div>
 

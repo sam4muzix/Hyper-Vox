@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { TranscriptionJob, TranscriptionStyle } from '../types';
 import { transcribeAudio, translateText } from '../services/geminiService';
 import { RealtimeProgress } from './RealtimeProgress';
+import { CustomSelect, SelectOption } from './CustomSelect';
 
 const LANGUAGES = [
   'English', 'Tamil', 'Hindi', 'Telugu', 'Malayalam', 'Kannada', 'Marathi', 'Bengali', 'Gujarati'
@@ -12,6 +13,9 @@ const STYLES: TranscriptionStyle[] = [
   'Colloquial (Local Slang)',
   'Classical (Formal)'
 ];
+
+const LANG_OPTIONS: SelectOption[] = LANGUAGES.map(l => ({ value: l, label: l }));
+const STYLE_OPTIONS: SelectOption[] = STYLES.map(s => ({ value: s, label: s }));
 
 enum SubTab {
   TRANSCRIPTION = 'Audio Transcription',
@@ -170,27 +174,21 @@ const TranscribeTranslatePanel: React.FC = () => {
                   </div>
 
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-gray-400 text-xs font-semibold uppercase mb-2">Target Language</label>
-                      <select
-                        value={transcribeLang}
-                        onChange={(e) => setTranscribeLang(e.target.value)}
-                        className="w-full bg-black/40 border border-emerald-500/20 text-white rounded-xl p-3 text-xs focus:border-emerald-500 focus:outline-none"
-                      >
-                        {LANGUAGES.map(l => <option key={l} value={l} className="bg-[#081810]">{l}</option>)}
-                      </select>
-                    </div>
+                    <CustomSelect
+                      label="Target Language"
+                      options={LANG_OPTIONS}
+                      value={transcribeLang}
+                      onChange={(val) => setTranscribeLang(val)}
+                      disabled={isTranscribing}
+                    />
 
-                    <div>
-                      <label className="block text-gray-400 text-xs font-semibold uppercase mb-2">Translation Style</label>
-                      <select
-                        value={transcribeStyle}
-                        onChange={(e) => setTranscribeStyle(e.target.value as TranscriptionStyle)}
-                        className="w-full bg-black/40 border border-emerald-500/20 text-white rounded-xl p-3 text-xs focus:border-emerald-500 focus:outline-none"
-                      >
-                        {STYLES.map(s => <option key={s} value={s} className="bg-[#081810]">{s}</option>)}
-                      </select>
-                    </div>
+                    <CustomSelect
+                      label="Translation Style"
+                      options={STYLE_OPTIONS}
+                      value={transcribeStyle}
+                      onChange={(val) => setTranscribeStyle(val as TranscriptionStyle)}
+                      disabled={isTranscribing}
+                    />
                   </div>
                 </div>
               </div>
@@ -285,23 +283,19 @@ const TranscribeTranslatePanel: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-gray-400 text-xs font-semibold uppercase mb-1.5">Target Language</label>
-                  <select
+                  <CustomSelect
                     value={translateLang}
-                    onChange={(e) => setTranslateLang(e.target.value)}
-                    className="w-full bg-black/40 border border-emerald-500/20 text-white rounded-xl p-3 text-xs focus:border-emerald-500 focus:outline-none"
-                  >
-                    {LANGUAGES.map(l => <option key={l} value={l} className="bg-[#081810]">{l}</option>)}
-                  </select>
+                    onChange={(val) => setTranslateLang(val)}
+                    options={LANG_OPTIONS}
+                  />
                 </div>
                 <div>
                   <label className="block text-gray-400 text-xs font-semibold uppercase mb-1.5">Style</label>
-                  <select
+                  <CustomSelect
                     value={translateStyle}
-                    onChange={(e) => setTranslateStyle(e.target.value as TranscriptionStyle)}
-                    className="w-full bg-black/40 border border-emerald-500/20 text-white rounded-xl p-3 text-xs focus:border-emerald-500 focus:outline-none"
-                  >
-                    {STYLES.map(s => <option key={s} value={s} className="bg-[#081810]">{s}</option>)}
-                  </select>
+                    onChange={(val) => setTranslateStyle(val as TranscriptionStyle)}
+                    options={STYLE_OPTIONS}
+                  />
                 </div>
               </div>
 
@@ -309,7 +303,7 @@ const TranscribeTranslatePanel: React.FC = () => {
                 isProcessing={isTranslating} 
                 current={isTranslating ? 1 : 0} 
                 total={1} 
-                title="Gemini 3.6 Flash Translation Stream" 
+                title="Neural Translation Engine Stream" 
                 statusMessage="Processing Dialect & Style Matrix..."
               />
 

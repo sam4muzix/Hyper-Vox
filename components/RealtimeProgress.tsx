@@ -39,11 +39,11 @@ export const RealtimeProgress: React.FC<RealtimeProgressProps> = ({
   let stageLabel = statusMessage;
   if (!stageLabel) {
     if (total > 0) {
-      if (current === 0) stageLabel = "Initializing Gemini Neural Model & Decoding Input...";
+      if (current === 0) stageLabel = "Initializing Neural Audio Engine & Decoding Input...";
       else if (current < total) stageLabel = `Synthesizing Audio Segment ${current} of ${total}...`;
       else stageLabel = "Merging Segment PCM Buffers & Encoding Lossless MP3...";
     } else {
-      stageLabel = "Connecting to Gemini 3.1 Flash Neural Stream...";
+      stageLabel = "Connecting to Neural Processing Stream...";
     }
   }
 
@@ -97,7 +97,7 @@ export const RealtimeProgress: React.FC<RealtimeProgressProps> = ({
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span>Real-time Gemini Audio Pipeline</span>
+          <span>Real-time Neural Audio Pipeline</span>
         </div>
 
         <div className="flex items-center gap-1">

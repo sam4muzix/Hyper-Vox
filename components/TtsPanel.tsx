@@ -5,6 +5,14 @@ import { logGenerationToFirestore } from '../services/firebaseService';
 import { getBrandFilename } from '../utils/audio';
 import { RealtimeProgress } from './RealtimeProgress';
 import { SpeechToTextDictation } from './SpeechToTextDictation';
+import { CustomSelect, SelectOption } from './CustomSelect';
+
+const DIALECT_OPTIONS: SelectOption[] = [
+  { value: Dialect.CHENNAI_TAMIL, label: 'Chennai Tamil (Local Style)', sublabel: 'Colloquial Madras Bashai regional dialect' },
+  { value: Dialect.CLASSIC_TAMIL, label: 'Classic Tamil (Formal Style)', sublabel: 'Traditional formal Senthamizh' },
+  { value: Dialect.INDIAN_ENGLISH, label: 'Indian English (Urban)', sublabel: 'Standard Indian accent' },
+  { value: Dialect.REGULAR_ENGLISH, label: 'Regular English (Neutral)', sublabel: 'Neutral international English' },
+];
 
 const AVAILABLE_VOICES: VoiceOption[] = [
   { id: 'm_chennai_1', name: 'Arjun - Chennai Gethu', gender: VoiceGender.MALE, apiVoiceName: 'Puck', persona: 'Bold, street-smart Chennai local male' },
@@ -292,26 +300,13 @@ const TtsPanel: React.FC = () => {
           
           <div className="space-y-4">
             {/* Dialect Profile */}
-            <div>
-              <label className="block text-gray-400 text-xs font-semibold uppercase mb-1.5 tracking-wider">
-                Dialect Profile
-              </label>
-              <div className="relative">
-                <select
-                  value={dialect}
-                  onChange={(e) => setDialect(e.target.value as Dialect)}
-                  className="w-full bg-black/40 border border-white/10 hover:border-white/20 text-white rounded-xl p-2.5 text-xs appearance-none focus:border-emerald-500 focus:outline-none cursor-pointer transition-all font-medium"
-                >
-                  <option value={Dialect.CHENNAI_TAMIL}>Chennai Tamil (Local Style)</option>
-                  <option value={Dialect.CLASSIC_TAMIL}>Classic Tamil (Formal Style)</option>
-                  <option value={Dialect.INDIAN_ENGLISH}>Indian English (Urban)</option>
-                  <option value={Dialect.REGULAR_ENGLISH}>Regular English (Neutral)</option>
-                </select>
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">
-                  ▼
-                </div>
-              </div>
-            </div>
+            <CustomSelect
+              label="Dialect Profile"
+              options={DIALECT_OPTIONS}
+              value={dialect}
+              onChange={(val) => setDialect(val as Dialect)}
+              disabled={isLoading}
+            />
 
             {/* Speech Pacing Control */}
             <div>
@@ -506,7 +501,7 @@ Tip: Use (Style) tags for per-sentence emotion delivery — e.g. (Shouting) Mass
           isProcessing={isLoading} 
           current={progress.current} 
           total={progress.total} 
-          title="Gemini 3.1 Neural Speech Engine" 
+          title="HyperVox Neural Speech Engine" 
         />
 
         {/* Single-Word Strong Action Button */}
