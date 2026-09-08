@@ -82,7 +82,7 @@ export const IntroModal: React.FC<IntroModalProps> = ({ isOpen, onClose }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 003-3V4.5a3 3 0 00-3-3s-3 1.343-3 3v8.25a3 3 0 003 3z" />
               </svg>
             </div>
-            <h3 className="text-sm font-bold text-white">🎙️ Neural TTS Engine</h3>
+            <h3 className="text-sm font-bold text-white">Neural TTS Engine</h3>
             <p className="text-[11px] text-gray-300 leading-normal">
               16 regional voice personas (*Arjun*, *Anitha*, *Titan*), 14 emotion vibes, inline <code className="text-emerald-400">(Style Tags)</code>, and Live Speech-to-Text Dictation.
             </p>
@@ -95,7 +95,7 @@ export const IntroModal: React.FC<IntroModalProps> = ({ isOpen, onClose }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m0 2.25c0 1.944-.33 3.812-.942 5.545M4.25 12.3c.73-1.854 1.258-3.81 1.558-5.836" />
               </svg>
             </div>
-            <h3 className="text-sm font-bold text-white">🎬 AI Voice Dubbing</h3>
+            <h3 className="text-sm font-bold text-white">AI Voice Dubbing</h3>
             <p className="text-[11px] text-gray-300 leading-normal">
               9-point vocal fingerprinting, pitch-preserved WSOLA time-stretching to match original duration without chipmunk pitch distortion.
             </p>
@@ -108,7 +108,7 @@ export const IntroModal: React.FC<IntroModalProps> = ({ isOpen, onClose }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
               </svg>
             </div>
-            <h3 className="text-sm font-bold text-white">🌐 Speech Matrix</h3>
+            <h3 className="text-sm font-bold text-white">Speech Matrix</h3>
             <p className="text-[11px] text-gray-300 leading-normal">
               Audio transcription & multi-dialect translation (*Chennai Tamil*, *Senthamizh*, *Indian English*) powered by Neural Audio Intelligence.
             </p>
@@ -123,12 +123,12 @@ export const IntroModal: React.FC<IntroModalProps> = ({ isOpen, onClose }) => {
           </span>
           <div className="flex flex-wrap gap-2">
             {[
-              '📻 Retail Radio & Promo Ads',
-              '🎬 Movie & Web Series Dubbing',
-              '📱 YouTube Reels & Shorts Audio',
-              '📢 Corporate Announcements',
-              '📚 Regional Audiobooks & Podcasts',
-              '🎙️ Hands-free Speech-to-Text Scripting'
+              'Retail Radio & Promo Ads',
+              'Movie & Web Series Dubbing',
+              'YouTube Reels & Shorts Audio',
+              'Corporate Announcements',
+              'Regional Audiobooks & Podcasts',
+              'Hands-free Speech-to-Text Scripting'
             ].map((uc, i) => (
               <span key={i} className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-gray-300">
                 {uc}

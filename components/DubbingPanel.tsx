@@ -334,9 +334,12 @@ const DubbingPanel: React.FC = () => {
                           const audio = document.getElementById(`audio-dub-${file.id}`) as HTMLAudioElement;
                           audio.paused ? audio.play() : audio.pause();
                         }}
-                        className="p-2 bg-white/5 border border-white/10 text-gray-300 rounded-lg hover:text-white transition-all"
+                        className="p-2 bg-white/5 border border-white/10 text-gray-300 rounded-lg hover:text-white transition-all flex items-center justify-center"
+                        title="Play Dubbed Audio"
                       >
-                        ▶
+                        <svg className="w-3.5 h-3.5 fill-current text-emerald-400" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
                       </button>
                       <a 
                         href={file.outputUrl} 
@@ -359,9 +362,12 @@ const DubbingPanel: React.FC = () => {
                   
                   <button 
                     onClick={() => removeFile(file.id)}
-                    className="p-1.5 text-gray-500 hover:text-white transition-colors"
+                    className="p-1.5 text-gray-500 hover:text-white transition-colors flex items-center justify-center"
+                    title="Remove Job"
                   >
-                    ✕
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   </button>
                 </div>
               </div>
