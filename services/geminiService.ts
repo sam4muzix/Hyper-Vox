@@ -5,7 +5,7 @@ import { decodeBase64ToUint8Array, pcmToMp3, blobToBase64, getAudioDurationFromF
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const TTS_MODEL  = 'gemini-3.1-flash-tts-preview';
-const TEXT_MODEL = 'gemini-3-flash-preview';
+const TEXT_MODEL = 'gemini-3.6-flash';
 
 const decodeDefaultKey = () => {
   try {
@@ -28,15 +28,14 @@ const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // ─── Retry logic ──────────────────────────────────────────────────────────────
 /**
- * 4 retries with exponential backoff.
- * - OTHER errors (transient engine overload) → 2000ms base
- * - Quota 429 → throw immediately, no retry (billing issue)
+ * 4 retries with fast exponential backoff.
+ * - Quota 429 → throw / retry with slight backoff
  * - Respects "retry in Xs" hints from the API
  */
 const withRetry = async <T>(
   operation: (attempt: number) => Promise<T>,
-  maxRetries = 4,
-  baseDelay = 1000
+  maxRetries = 3,
+  baseDelay = 300
 ): Promise<T> => {
   let lastError: any;
 
@@ -180,62 +179,20 @@ const getCacheKey = (chunk: string, promptContext: string, speechConfig: any) =>
  * within the prompt context for maximum distinctiveness.
  */
 const EMOTION_SYSTEM_INSTRUCTIONS: Record<string, string> = {
-
-  [Emotion.SHOUTING]: `Audio Profile: You are a MAXIMUM ENERGY Tamil retail commercial announcer.
-Scene: A chaotic, high-decibel street sale event — sirens, crowd noise, absolute frenzy.
-Director's Notes: SHOUT every single word at full volume. Your voice should strain with energy. Pitch at the top of your range. Tempo: extremely fast, breathless, almost overwhelming. Think of an auctioneer at a fire sale — never pause, never soften, never drop energy. Every syllable lands like a punch.`,
-
-  [Emotion.PEPPY]: `Audio Profile: You are a bright, bubbly Indian FM radio jockey presenting a sponsor segment.
-Scene: Morning drive-time on a top FM station — the audience is waking up, coffee in hand.
-Director's Notes: Speak with a fast, bouncy, punchy rhythm. Smile audible in every word. Rising inflection on product highlights. Consonants sharp and crisp. Energy stays HIGH and BRIGHT throughout — never flatten, never slow, never go serious. This is radio gold.`,
-
-  [Emotion.EXCITED]: `Audio Profile: You are an ultra-enthusiastic product launch announcer — this is the biggest moment of the year.
-Scene: Grand reveal event — confetti falling, crowd on their feet, spotlights blazing.
-Director's Notes: Deliver as if you've just won the lottery. Pitch at the ceiling. Every sentence faster than the last. Breathless excitement — you can barely keep up with your own enthusiasm. This is joy overloaded. Never calm down even for a second.`,
-
-  [Emotion.CRICKET_STADIUM]: `Audio Profile: You are a live cricket stadium PA announcer — the home team just hit a six.
-Scene: 80,000-person packed stadium, crowd ROARING, music blasting.
-Director's Notes: SCREAM with maximum stadium energy. Voice amplified, projected to the last row. Frenzied, electric delivery — every word triggers a crowd surge. Never drop below full volume. Short punchy bursts like a sports anchor calling the winning moment.`,
-
-  [Emotion.ANNOUNCEMENT]: `Audio Profile: You are a formal corporate spokesperson delivering an official public announcement.
-Scene: Live press conference broadcast — cameras rolling, journalists taking notes.
-Director's Notes: Deep, resonant, authoritative delivery. Measured pace — every word carefully placed. No excitement, no warmth, no softness. This is OFFICIAL. Commanding presence. Each sentence sounds like a declaration. Slight downward inflection at the end of statements.`,
-
-  [Emotion.DRAMATIC]: `Audio Profile: You are a cinematic Tamil film trailer narrator.
-Scene: A sweeping, slow-motion movie trailer — emotional music building underneath.
-Director's Notes: Speak S-L-O-W-L-Y with theatrical gravitas. Deep, resonant voice at the low end of your range. Deliberate pauses before every key word — let the silence build tension. Progressive intensity — start quiet, swell toward the climax. Every word carries the weight of fate.`,
-
-  [Emotion.HAPPY]: `Audio Profile: You are a warm, joyful festive commercial voice.
-Scene: A Diwali or Pongal sale event — families shopping together, laughter everywhere.
-Director's Notes: Bright, smiling, genuinely warm delivery. Mid-to-high pitch. Light and welcoming — like greeting a dear friend. Make every listener feel celebrated and included. Natural joy, not forced excitement. Gentle rising inflections. Heartfelt and real.`,
-
-  [Emotion.NEUTRAL]: `Audio Profile: You are a professional Tamil television news anchor.
-Scene: Prime-time evening news broadcast on a major channel.
-Director's Notes: Clear, calm, measured delivery. Confident authority without aggression. Perfect diction and controlled pacing. Neutral but never flat — there is gravitas and intelligence in every sentence. No emotion, no colour, just precise professional delivery.`,
-
-  [Emotion.SARCASM]: `Audio Profile: You are a sharp, witty Tamil stand-up comedian appearing in a clever TV ad.
-Scene: A tongue-in-cheek commercial that breaks the fourth wall.
-Director's Notes: Knowing smirk in every word. Strategic pauses before punchlines — let the irony land. Wry upward inflection that signals "you know exactly what I mean". Sharp consonants for comic effect. Never monotone — the wit is in the variation. Dry, intelligent humour.`,
-
-  [Emotion.SAD]: `Audio Profile: You are a heartfelt storyteller narrating a deeply emotional Tamil public service ad.
-Scene: A quiet, intimate moment — a single candle, soft focus, genuine emotion.
-Director's Notes: Speak slowly, softly, sincerely. Slightly breathy quality. Controlled emotional depth — not melodrama, but genuine feeling that rises naturally. Tender pauses between phrases. The listener should feel what you feel. Never robotic, never rushed.`,
-
-  [Emotion.LUXURY]: `Audio Profile: You are the voice of an ultra-premium luxury brand — think Rolex or Louis Vuitton Tamil edition.
-Scene: An elegant product film — slow motion, golden light, marble surfaces.
-Director's Notes: Smooth, unhurried, velvety delivery at the lower mid-range of your voice. Every syllable is precious and deliberate. Never rush. Never peak in energy. Exude effortless exclusivity — the voice of something rare. Soft breath behind the words. Understated perfection.`,
-
-  [Emotion.CONVERSATIONAL]: `Audio Profile: You are a trusted friend having a genuine one-on-one conversation.
-Scene: Casual afternoon chat over tea — relaxed, warm, no performance.
-Director's Notes: Natural, organic delivery with real rises and falls — like actual speech, not a script. Warm and genuine. Occasional small pauses as if thinking. No announcement energy, no performance. Sound like a real person who genuinely cares about what they're saying.`,
-
-  [Emotion.DEEP_BASS]: `Audio Profile: You are a deep-voiced cinematic bass narrator — the rumbling voice of power and gravitas.
-Scene: The darkened stage of a premium event — a single spotlight, subwoofer rumble, audience holding their breath.
-Director's Notes: Speak from the absolute LOWEST register of your voice. Deep, chest-resonant, thunderous bass that vibrates with authority. Extremely slow, deliberate pacing — each word lands like a drumbeat. This is the voice of God in a movie trailer. Minimal inflection — flat and commanding. Every pause is a power move. Think James Earl Jones meets a subwoofer. NEVER go above mid-range. The lower, the better.`,
-
-  [Emotion.CINEMATIC_NARRATION]: `Audio Profile: You are an epic Hollywood movie trailer narrator — the voice behind every blockbuster reveal.
-Scene: A sweeping cinematic trailer — explosions, orchestral crescendo, title cards slamming into frame.
-Director's Notes: Deep, powerful, larger-than-life delivery with dramatic gravitas. Build intensity across phrases — start with controlled power, escalate to thunderous peaks. Strategic dramatic pauses before reveal words. Voice should sound like it's echoing in an IMAX theater. Mix between intense whispered tension and explosive proclamations. Every sentence is a climactic moment. Think "In a world where..." energy. Commanding, epic, unforgettable.`,
+  [Emotion.SHOUTING]: `Style: MAXIMUM ENERGY retail commercial announcer. SHOUT every word at full volume with intense street sale energy.`,
+  [Emotion.PEPPY]: `Style: Bright, bubbly Indian FM radio jockey. Fast, bouncy, punchy rhythm with a constant smile.`,
+  [Emotion.EXCITED]: `Style: Product launch announcer. High pitch, breathless enthusiasm and maximum excitement.`,
+  [Emotion.CRICKET_STADIUM]: `Style: Live cricket stadium PA announcer. Roaring, electric stadium energy.`,
+  [Emotion.ANNOUNCEMENT]: `Style: Formal corporate spokesperson. Deep, authoritative, measured and official delivery.`,
+  [Emotion.DRAMATIC]: `Style: Cinematic film trailer narrator. Speak slowly with theatrical gravitas and tension.`,
+  [Emotion.HAPPY]: `Style: Warm, joyful festive commercial voice. Bright, light, smiling and welcoming.`,
+  [Emotion.NEUTRAL]: `Style: Professional TV news anchor. Clear, calm, precise and measured delivery.`,
+  [Emotion.SARCASM]: `Style: Witty comedian in TV ad. Dry irony, knowing smirk, strategic pauses.`,
+  [Emotion.SAD]: `Style: Heartfelt storyteller. Soft, gentle, sincere emotional delivery.`,
+  [Emotion.LUXURY]: `Style: Ultra-premium luxury brand. Velvety, smooth, unhurried, understated perfection.`,
+  [Emotion.CONVERSATIONAL]: `Style: Casual friend in natural 1-on-1 chat. Organic speech rhythm.`,
+  [Emotion.DEEP_BASS]: `Style: Deepest bass narrator. Subwoofer chest resonance, slow drumbeat pacing, maximum gravitas.`,
+  [Emotion.CINEMATIC_NARRATION]: `Style: Epic Hollywood trailer narrator. Explosive IMAX gravitas and thunderous peaks.`,
 };
 
 // ─── Emotion → inline audio tag ───────────────────────────────────────────────
@@ -319,53 +276,22 @@ const buildPromptContext = (
   pronunciationGuide?: string
 ): string => {
   const dialectMap: Record<string, string> = {
-    [Dialect.CHENNAI_TAMIL]:  'Chennai Tamil — colloquial Madras Bashai, native pronunciation, strictly no English accent',
-    [Dialect.CLASSIC_TAMIL]:  'Classic Tamil — formal Senthamizh, native pronunciation',
-    [Dialect.INDIAN_ENGLISH]: 'Indian English',
-    [Dialect.REGULAR_ENGLISH]: 'Regular English — standard neutral international accent, clear and universally understandable pronunciation',
+    [Dialect.CHENNAI_TAMIL]:  'Chennai Tamil colloquial accent',
+    [Dialect.CLASSIC_TAMIL]:  'Formal Classic Senthamizh',
+    [Dialect.INDIAN_ENGLISH]: 'Indian English accent',
+    [Dialect.REGULAR_ENGLISH]: 'Neutral English accent',
   };
 
-  let emotionInstruction = EMOTION_SYSTEM_INSTRUCTIONS[emotion]
-    ?? `Audio Profile: Commercial voice performer.\nDirector's Notes: Deliver with ${emotion.toLowerCase()} style.`;
+  let emotionInstruction = EMOTION_SYSTEM_INSTRUCTIONS[emotion] ?? `Style: ${emotion}`;
 
   if (voice.id === 'f_parrot_1') {
-    emotionInstruction = `Audio Profile: You are a cute, high-pitched pet parrot performing this script.
-Director's Notes: Deliver the speech with ${emotion.toLowerCase()} emotion, but keep the voice character strictly as a high-pitched, cute parrot. Interject realistic parrot vocal sounds (like "[squawk]", "[chirp]", "[whistle]") between sentences or phrases. Absolutely do NOT sound like a human announcer, male voice, or female narrator. You must remain 100% in the cute parrot character.`;
+    emotionInstruction = `Style: Cute high-pitched talking parrot. Interject parrot squawks/chirps/whistles.`;
   }
 
   const dialectStyle = dialectMap[dialect] ?? String(dialect);
+  const voicePersonaOverride = VOICE_PERSONA_OVERRIDES[voice.id] ?? `Voice: ${voice.persona}`;
 
-  const pacingMap: Record<string, string> = {
-    [SpeechPacing.SLOW]:   'PACING: Speak SLOWLY — deliberate, measured pace. Let every word breathe. Long pauses between phrases. Unhurried and commanding.',
-    [SpeechPacing.MEDIUM]: 'PACING: Speak at a NATURAL medium pace — balanced rhythm, clear and steady. Neither rushed nor dragging.',
-    [SpeechPacing.FAST]:   'PACING: Speak FAST — rapid-fire delivery, high tempo, breathless energy. Quick transitions between phrases, no pauses.',
-  };
-
-  const pacingInstruction = pacingMap[pacing] ?? pacingMap[SpeechPacing.MEDIUM];
-
-  let rules = `- Read every word exactly as written. Do not speak any of the styling instructions, bracketed notes, or directives. Only speak the text in the quotes.`;
-  if (voice.id === 'f_parrot_1') {
-    rules = `- PERFORM AS A PARROT: Speak in an ultra high-pitched, squeaky, and cute parrot voice.
-- PARROT VOCALIZATIONS: You must vocally perform parrot sounds like squawks, chirps, whistles, and squeaks throughout the speech, especially at the start, between phrases, and at the end.
-- Do not speak any of the bracketed styling tags, but DO vocally act them out as a parrot.
-- You must sound like a real, cute talking parrot, NOT a human.`;
-  }
-
-  // Pull the per-voice-ID persona override if available (critical for voices sharing the same API voice name)
-  const voicePersonaOverride = VOICE_PERSONA_OVERRIDES[voice.id] ?? '';
-
-  let context = `${emotionInstruction}
-
-${pacingInstruction}
-Dialect: ${dialectStyle}.
-${voicePersonaOverride || `Voice Character: ${voice.persona}.`}
-ABSOLUTE RULES:
-${rules}`;
-
-  if (pronunciationGuide) {
-    context += `
-Pronunciation guidance: ${pronunciationGuide}`;
-  }
+  let context = `${emotionInstruction} Pacing: ${pacing}. Dialect: ${dialectStyle}. ${voicePersonaOverride}.`;
 
   return context;
 };
@@ -577,7 +503,7 @@ export const generateSpotAudio = async (
 
   // Run in parallel batches of CONCURRENCY with rate-limit friendly throttle
   for (let start = 0; start < allChunks.length; start += CONCURRENCY) {
-    if (start > 0) await wait(250);
+    if (start > 0) await wait(80);
     const batch = allChunks
       .slice(start, start + CONCURRENCY)
       .map((_, j) => processChunk(start + j));
@@ -802,7 +728,7 @@ ABSOLUTE RULES:
       (attempt) => synthesizeChunk(ai, taggedChunk, voiceCloneContext, speechConfig, attempt)
     );
     pcmBuffers.push(pcm);
-    if (chunks.length > 1 && i < chunks.length - 1) await wait(1000 + Math.random() * 400);
+    if (chunks.length > 1 && i < chunks.length - 1) await wait(100);
   }
 
   const totalLen = pcmBuffers.reduce((a, b) => a + b.length, 0);
