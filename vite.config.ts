@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
-    const defaultKey = Buffer.from('QVEuQWI4Uk42THZUUEZabHJBeThvRWxyWnk1QUlWUUFJRFFtSHN4RXFvcG9hUXVDTUM0OWc=', 'base64').toString('utf-8');
+    const defaultKey = Buffer.from('QVEuQWI4Uk42SlA3UmVWNmpwZmhzaUxMRkh3ZUJCVmREOUlTZGt0TDhCa3lTZTVCM29DWEE=', 'base64').toString('utf-8');
     const apiKey = env.GEMINI_API_KEY || defaultKey;
     return {
       base: './',
